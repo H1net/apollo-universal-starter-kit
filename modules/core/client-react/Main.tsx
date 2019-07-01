@@ -14,7 +14,9 @@ import settings from '@gqlapp/config';
 
 import RedBox from './RedBox';
 
-log.info(`Connecting to GraphQL backend at: ${apiUrl}`);
+if (!__TEST__ || settings.app.logging.level === 'debug') {
+  log.info(`Connecting to GraphQL backend at: ${apiUrl}`);
+}
 
 const ref: { modules: ClientModule; client: ApolloClient<any>; store: Store } = {
   modules: null,
@@ -24,7 +26,7 @@ const ref: { modules: ClientModule; client: ApolloClient<any>; store: Store } = 
 
 const history = createBrowserHistory();
 
-export const onAppCreate = (modules: ClientModule, entryModule: NodeModule) => {
+export const onAppCreate = async (modules: ClientModule, entryModule: NodeModule) => {
   ref.modules = modules;
   ref.client = createApolloClient({
     apiUrl,
@@ -46,9 +48,11 @@ const logPageView = (location: any) => {
   ReactGA.pageview(location.pathname);
 };
 
-// Initialize Google Analytics and send events on each location change
-ReactGA.initialize(settings.analytics.ga.trackingId);
-logPageView(window.location);
+if (!__TEST__) {
+  // Initialize Google Analytics and send events on each location change
+  ReactGA.initialize(settings.analytics.ga.trackingId);
+  logPageView(window.location);
+}
 
 history.listen(location => logPageView(location));
 
